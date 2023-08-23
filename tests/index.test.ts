@@ -26,3 +26,12 @@ describe("parseCollectionDay", () => {
     expect(actual.toISO()).toEqual(expected.toISO());
   });
 });
+
+describe("getWhenToPutBinsOut", () => {
+  beforeAll(() => {
+    const expectedNow = DateTime.local(2023, 8, 23, 12, 30);
+    Settings.now = () => expectedNow.toMillis();
+  });
+
+  test("Collection day is tomorrow", () => {});
+});
