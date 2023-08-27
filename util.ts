@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import parse from "node-html-parser";
 
 export interface BinResponse {
-  modified: string;
+  lastModifiedTimestamp: number;
   image: string;
   bins: string[];
   collectionDay: string;
@@ -12,8 +12,8 @@ export interface BinResponse {
 export function getWhenToPutBinsOut(collectionDay: DateTime): string {
   const hoursUntilCollection = collectionDay.diffNow("hours").hours;
   if (hoursUntilCollection < 0) return "-";
-  if (hoursUntilCollection <= 7) return "Today!";
-  if (hoursUntilCollection <= 24) return "Tonight";
+  if (hoursUntilCollection <= 7) return "now!";
+  if (hoursUntilCollection <= 24) return "tonight";
   if (hoursUntilCollection <= 48) {
     return collectionDay.toRelative({ unit: "hours" }) ?? "Unknown";
   }
@@ -39,11 +39,15 @@ export function parseHtmlResponse(html: string): BinResponse {
 
   const collectionDay = parseCollectionDay(collectionDayText);
 
+  const bins = root
+    .querySelectorAll("#tab3 > ul:nth-child(5) > li")
+    .map((x) => x.innerText.split(", due")[0]);
+
   return {
-    bins: [],
+    bins,
     collectionDay: collectionDay.toISODate()!,
     image: "",
-    modified: "",
-    whenToPutBinsOut: "",
+    lastModifiedTimestamp: DateTime.now().toMillis(),
+    whenToPutBinsOut: getWhenToPutBinsOut(collectionDay),
   };
 }

@@ -9,12 +9,14 @@ import {
 import * as fs from "fs";
 import path from "path";
 
+function setMockNow(date: DateTime) {
+  Settings.now = () => date.toMillis();
+}
+
 const now = DateTime.local(2023, 8, 23, 12, 30);
 
 describe("parseCollectionDay", () => {
-  beforeAll(() => {
-    Settings.now = () => now.toMillis();
-  });
+  beforeAll(() => setMockNow(now));
 
   test("Happy path", () => {
     const actual = parseCollectionDay("Thursday, 24 August");
@@ -39,54 +41,55 @@ describe("getWhenToPutBinsOut", () => {
   const collectionDay = DateTime.local(2023, 8, 24, 7);
 
   test("Collection day is tomorrow", () => {
-    const now = DateTime.local(2023, 8, 23, 19).toMillis();
-    Settings.now = () => now;
-    expect(getWhenToPutBinsOut(collectionDay)).toEqual("Tonight");
+    setMockNow(DateTime.local(2023, 8, 23, 19));
+    expect(getWhenToPutBinsOut(collectionDay)).toEqual("tonight");
   });
 
   test("Collection day is today", () => {
-    const now = DateTime.local(2023, 8, 24, 0, 1).toMillis();
-    Settings.now = () => now;
-    expect(getWhenToPutBinsOut(collectionDay)).toEqual("Today!");
+    setMockNow(DateTime.local(2023, 8, 24, 0, 1));
+    expect(getWhenToPutBinsOut(collectionDay)).toEqual("now!");
   });
 
   test("Collection day was today", () => {
-    const now = DateTime.local(2023, 8, 24, 7, 1).toMillis();
-    Settings.now = () => now;
+    setMockNow(DateTime.local(2023, 8, 24, 7, 1));
     expect(getWhenToPutBinsOut(collectionDay)).toEqual("-");
   });
 
   test("Collection day is in 48 hours", () => {
-    const now = DateTime.local(2023, 8, 22, 7).toMillis();
-    Settings.now = () => now;
+    setMockNow(DateTime.local(2023, 8, 22, 7));
     expect(getWhenToPutBinsOut(collectionDay)).toEqual("in 48 hours");
   });
 
   test("Collection day is more than 48 hours away", () => {
-    const now = DateTime.local(2023, 8, 22, 6).toMillis();
-    Settings.now = () => now;
+    setMockNow(DateTime.local(2023, 8, 22, 6));
     expect(getWhenToPutBinsOut(collectionDay)).toEqual("in 2 days");
   });
 
   test("Collection day is more than a week away", () => {
-    const now = DateTime.local(2023, 8, 17, 2).toMillis();
-    Settings.now = () => now;
+    setMockNow(DateTime.local(2023, 8, 17, 2));
     expect(getWhenToPutBinsOut(collectionDay)).toEqual("in 7 days");
   });
 });
 
 describe("parseHtmlResponse", () => {
+  beforeAll(() => setMockNow(now));
+
   const testFile = path.join(__dirname, "./", "page.html");
   const html = fs.readFileSync(testFile, "utf8");
 
   test("Happy path", () => {
     const actual = parseHtmlResponse(html);
     const expected: BinResponse = {
-      bins: [],
       collectionDay: "2023-08-31",
+      lastModifiedTimestamp: now.toMillis(),
+      bins: [
+        "Orange and black bin (food waste)",
+        "Brown bin (garden waste)",
+        "Blue bin or clear sacks (recycling)",
+        "Textiles (place in a carrier bag next to your bin)",
+      ],
       image: "",
-      modified: "",
-      whenToPutBinsOut: "",
+      whenToPutBinsOut: "in 7 days",
     };
     expect(actual).toEqual(expected);
   });
