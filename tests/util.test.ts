@@ -88,8 +88,10 @@ describe("parseHtmlResponse", () => {
         "Blue bin or clear sacks (recycling)",
         "Textiles (place in a carrier bag next to your bin)",
       ],
-      image: "",
+      image: "recycling.jpg",
       whenToPutBinsOut: "in 7 days",
+      announcements:
+        "Our offices are closed this bank holiday Monday, 28 August. If your bin is due to be collected, leave it out as usual and we'll collect it as soon as we can.",
     };
     expect(actual).toEqual(expected);
   });

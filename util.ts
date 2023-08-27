@@ -7,6 +7,7 @@ export interface BinResponse {
   bins: string[];
   collectionDay: string;
   whenToPutBinsOut: string;
+  announcements: string;
 }
 
 export function getWhenToPutBinsOut(collectionDay: DateTime): string {
@@ -43,11 +44,17 @@ export function parseHtmlResponse(html: string): BinResponse {
     .querySelectorAll("#tab3 > ul:nth-child(5) > li")
     .map((x) => x.innerText.split(", due")[0]);
 
+  const announcementElement = root.querySelector(
+    ".__globalServiceAnnouncement > div > p",
+  );
+  const announcements = announcementElement?.innerText ?? "";
+
   return {
     bins,
     collectionDay: collectionDay.toISODate()!,
-    image: "",
+    image: "recycling.jpg",
     lastModifiedTimestamp: DateTime.now().toMillis(),
     whenToPutBinsOut: getWhenToPutBinsOut(collectionDay),
+    announcements,
   };
 }
